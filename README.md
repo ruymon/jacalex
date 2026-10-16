@@ -1,4 +1,26 @@
-# Analisador léxico de Jaca
+# Analisador léxico e sintático de Jaca
+
+## Parte II: analisador sintático
+
+A classe `compiler.parser.Parser` implementa um analisador descendente recursivo
+(LL(1)): cada regra da gramática é um método e o token atual decide o caminho.
+O `Main` cria o `Scanner`, passa para o `Parser` e chama `parse()`.
+
+```bash
+java -jar target/jacalex.jar tests/syntax-valid.input
+```
+
+Saída esperada para um programa correto:
+
+```text
+Análise léxica terminada com sucesso!
+Análise sintática terminada com sucesso!
+```
+
+Para um programa incorreto, o parser para no primeiro erro e informa a marca esperada, a
+recebida, a linha e a coluna. Casos de erro em `tests/syntax-invalid-*.input`.
+
+## Parte I: analisador léxico
 
 O programa lê a entrada e exibe a classificação de cada terminal (token).
 Espaços, tabulações e quebras de linha são ignorados.
@@ -27,12 +49,12 @@ Esta parte faz apenas a análise léxica; não verifica a estrutura dos comandos
 
 ## Testes
 
-O arquivo `teste-a.input` contém todos os terminais válidos, incluindo os seis
+O arquivo `tests/valid-test.input` contém todos os terminais válidos, incluindo os seis
 operadores relacionais e números inteiros, decimais e em notação científica.
 
 ```bash
 mvn clean package
-java -jar target/jacalex.jar teste-a.input
+java -jar target/jacalex.jar tests/valid-test.input
 ```
 
 Por exemplo, `x = 10 + 2;` produz:
@@ -50,7 +72,7 @@ Análise léxica terminada com sucesso!
 Para testar um símbolo inválido:
 
 ```bash
-java -jar target/jacalex.jar teste-invalido.input
+java -jar target/jacalex.jar tests/invalid-test.input
 ```
 
 O programa para no `@` e informa o erro na linha 1, coluna 8.
@@ -90,5 +112,5 @@ java -jar jacalex.jar # para executar o analisador lendo a expressão que você 
 ou
 
 ```bash
-java -jar jacalex.jar ../teste-a.input # para executar o analisador abrindo arquivo de testes
+java -jar jacalex.jar ../tests/valid-test.input # para executar o analisador abrindo arquivo de testes
 ```

@@ -1,8 +1,7 @@
 package compiler;
 
+import compiler.parser.Parser;
 import compiler.scanner.Scanner;
-import compiler.scanner.Tag;
-import compiler.scanner.Token;
 
 public class Main {
 
@@ -24,19 +23,15 @@ public class Main {
                 }
             }
         }
+        if (reader == null) {
+            return;
+        }
         try {
-            // Cria o analisador léxico
             Scanner scanner = new Scanner(reader);
-            // Testar aqui no programa principal
-            Token token;
-            token = scanner.yylex();
-            while (token.tag != Tag.EOF) {
-                System.out.println("Token: " + token);
-                token = scanner.yylex();
-            }
+            Parser parser = new Parser(scanner);
+            parser.parse();
         } catch (Exception e) {
             System.out.println("Exceção: " + e.getMessage());
         }
-
     }
 }
