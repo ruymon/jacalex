@@ -1,0 +1,94 @@
+package interpreter;
+
+import ast.*;
+import java_cup.runtime.*;
+
+parser code {:
+    public void syntax_error(Symbol token) {
+        String found = token.value == null ? "fim da entrada" : "\"" + token.value + "\"";
+        throw new RuntimeException("Erro durante a análise sintática: marca inesperada " + found + "\n" +
+                "Linha: " + (token.left + 1) + " e Coluna: " + (token.right + 1));
+    }
+:}
+
+terminal PRINT, SIN, COS, PI;
+terminal ASSIGN, SEMI, LPAREN, RPAREN, LBRACE, RBRACE;
+terminal PLUS, MINUS, TIMES, DIVIDE, MOD, POWER, UMINUS;
+terminal Double NUMBER;
+terminal String ID, STRING;
+
+non terminal program;
+non terminal BlockCommand command_list;
+non terminal Command command_part, command_block, command, assignment_command, print_command;
+non terminal Expression expr;
+
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE, MOD;
+precedence right UMINUS;
+precedence right POWER;
+
+start with program;
+
+program ::= command_list:l
+        {: new Program(l.commands).accept(new InterpreterVisitor()); :}
+    ;
+
+command_list ::= command_list:l command_part:p
+        {: l.add(p); RESULT = l; :}
+    | command_part:p
+        {: BlockCommand l = new BlockCommand(); l.add(p); RESULT = l; :}
+    ;
+
+command_part ::= command:c SEMI
+        {: RESULT = c; :}
+    | command_block:b
+        {: RESULT = b; :}
+    ;
+
+command_block ::= LBRACE command_list:l RBRACE
+        {: RESULT = l; :}
+    ;
+
+command ::= assignment_command:c
+        {: RESULT = c; :}
+    | print_command:c
+        {: RESULT = c; :}
+    ;
+
+assignment_command ::= ID:id ASSIGN expr:e
+        {: RESULT = new AssignCommand(id, e); :}
+    ;
+
+print_command ::= PRINT LPAREN expr:e RPAREN
+        {: RESULT = new PrintCommand(e); :}
+    ;
+
+expr ::= expr:e1 PLUS expr:e2
+        {: RESULT = new SumExpr(e1, e2); :}
+    | expr:e1 MINUS expr:e2
+        {: RESULT = new SubExpr(e1, e2); :}
+    | expr:e1 TIMES expr:e2
+        {: RESULT = new MulExpr(e1, e2); :}
+    | expr:e1 DIVIDE expr:e2
+        {: RESULT = new DivExpr(e1, e2); :}
+    | expr:e1 MOD expr:e2
+        {: RESULT = new ModExpr(e1, e2); :}
+    | expr:e1 POWER expr:e2
+        {: RESULT = new PowExpr(e1, e2); :}
+    | MINUS expr:e
+        {: RESULT = new UMinusExpr(e); :} %prec UMINUS
+    | LPAREN expr:e RPAREN
+        {: RESULT = e; :}
+    | NUMBER:n
+        {: RESULT = new NumberExpr(n); :}
+    | STRING:s
+        {: RESULT = new StringExpr(s); :}
+    | ID:id
+        {: RESULT = new IdExpr(id); :}
+    | SIN LPAREN expr:e RPAREN
+        {: RESULT = new SinExpr(e); :}
+    | COS LPAREN expr:e RPAREN
+        {: RESULT = new CosExpr(e); :}
+    | PI
+        {: RESULT = new PiExpr(); :}
+    ;

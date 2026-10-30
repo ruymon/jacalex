@@ -1,2 +1,4 @@
-target/*
+target/
+build/
 out/
+__pycache__/
